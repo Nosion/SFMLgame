@@ -9,6 +9,7 @@ using SFML;
 using SFML.Graphics;
 using SFML.Window;
 
+using System.Diagnostics;
 namespace SFMLtest2
 {
     static class Program
@@ -23,20 +24,26 @@ namespace SFMLtest2
 
         static void Main()
         {
-            float angle = (float) (90 * (Math.PI / 180));
+            float angle = (float)(90 * (Math.PI / 180));
             float speed_x = 0.00f;
             float speed_y = 0.00f;
             float gravity = 0.0001f;
-            var moving = true;
+
+            //Gametime.
+            Stopwatch time = new Stopwatch();
+            time.Start();
+
+            long currentTime = 0;
+            long oldTime;
 
 
-            float scale_x; 
+            float scale_x;
             float scale_y;
 
             float velocity_x;
             float velocity_y;
 
-          
+
             //Angle for the ball
             scale_x = (float)(Math.Sin(angle));
             scale_y = (float)(Math.Cos(angle));
@@ -48,13 +55,8 @@ namespace SFMLtest2
             velocity_x = (speed_x * scale_x);
             velocity_y = (speed_y * scale_y);
 
-
-
-
-             float kick = (float)((Math.Cos((180 * (Math.PI / 180)) * 0.00001f))/800);
-            
-
-
+            //Kick equasion
+            float kick = (float)((Math.Cos((180 * (Math.PI / 180)) * 0.00001f)) / 800);
 
 
             //float velocity_xF = (float)velocity_x;
@@ -79,7 +81,6 @@ namespace SFMLtest2
             //lawn.Position = new Vector2f(lawn.Texture.Size.X , lawn.Texture.Size.Y);
             lawn.Position = new Vector2f(0f, (600f - lawn.Texture.Size.Y));
 
-
             //Ball
             Texture TextureBall = new Texture("textures\\ball.png");
             Sprite ball = new Sprite(new Texture("textures\\ball.png"));
@@ -88,7 +89,7 @@ namespace SFMLtest2
             ball.Texture.Smooth = true;
             #endregion
 
-                       
+
             // Start the game loop
             while (app.IsOpen())
             {
@@ -98,33 +99,31 @@ namespace SFMLtest2
                 // Clear screen
                 app.Clear(windowColor);
 
-                ////Gravity
-                //if (moving == true)
-                //{
-                //    if (velocity_yF >= gravitymax)
-                //    {
-                //        moving = false;
-                //    }
+                currentTime = time.ElapsedMilliseconds;
+                oldTime = time.ElapsedMilliseconds - currentTime;
 
-                //    velocity_yF = velocity_yF + gravity;
+                Console.WriteLine(oldTime);
 
-                //    if (ball.Position.Y - velocity_yF >= 600)
-                //    {
-                //        ball.Position = new Vector2f(ball.Position.Y + velocity_yF, ball.Position.X + velocity_xF);
-                //    }
-                //    ball.Position = new Vector2f(ball.Position.X + velocity_xF, ball.Position.Y + velocity_yF);
-                //}
+                
+
+
 
                 if (velocity_y < 0.38f)
-                velocity_y += gvelocity;
-
+                {
+                    velocity_y *= oldTime;
+                    velocity_y += gvelocity;
+                    
+                }
 
                 if (ball.Position.X <= 800f)
+                {
                     ball.Position += new Vector2f(velocity_x, velocity_y);
+                }
                 if (ball.Position.Y >= 500f)
                 {
-                    velocity_y = (velocity_y *-1f) + velocity_y * 0.05f;
+                    velocity_y = (velocity_y * -1f) + velocity_y * 0.05f;
                     velocity_x = 0f;
+                    ball.Position = new Vector2f(ball.Position.X, 500f);
                 }
 
 
@@ -132,21 +131,22 @@ namespace SFMLtest2
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
                 {
                     velocity_y -= kick;
-                
+
                 }
 
-                Console.WriteLine(velocity_x);
-                Console.WriteLine(velocity_y);
-                
-                
+                //Console.WriteLine(velocity_x);
+                //Console.WriteLine(velocity_y);
+
 
 
                 //Drawing onto window
                 app.Draw(lawn);
                 app.Draw(ball);
                 app.Draw(zombie);
-             
+
                 app.Display();
+
+
             } //End game loop
         } //End Main()
     } //End Program
@@ -170,4 +170,3 @@ namespace SFMLtest2
 //circle.Position = new Vector2f(50.0f, 50.0f);
 //app.Draw(circle);
 #endregion
-
