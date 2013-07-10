@@ -34,7 +34,8 @@ namespace SFMLtest2
             time.Start();
 
             long currentTime = 0;
-            long oldTime;
+            long updateTime;
+            long kickKeyTime = 0;
 
 
             float scale_x;
@@ -56,7 +57,7 @@ namespace SFMLtest2
             velocity_y = (speed_y * scale_y);
 
             //Kick equasion
-            float kick = (float)((Math.Cos((180 * (Math.PI / 180)) * 0.00001f)) / 800);
+            float kick = (float)((Math.Cos((0 * (Math.PI / 180)))) / 2);
 
 
             //float velocity_xF = (float)velocity_x;
@@ -99,21 +100,23 @@ namespace SFMLtest2
                 // Clear screen
                 app.Clear(windowColor);
 
+                updateTime = time.ElapsedMilliseconds - currentTime;
                 currentTime = time.ElapsedMilliseconds;
-                oldTime = time.ElapsedMilliseconds - currentTime;
 
-                Console.WriteLine(oldTime);
 
-                
+                //if (velocity_y)
 
+
+                velocity_y += updateTime * 0.00009f;
+                // velocity_x -= updateTime * 0.00009f;
 
 
                 if (velocity_y < 0.38f)
                 {
-                    velocity_y *= oldTime;
                     velocity_y += gvelocity;
-                    
                 }
+
+
 
                 if (ball.Position.X <= 800f)
                 {
@@ -128,10 +131,12 @@ namespace SFMLtest2
 
 
 
-                if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
-                {
-                    velocity_y -= kick;
 
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Space) && time.ElapsedMilliseconds - kickKeyTime >= 1000)
+                {
+                    kickKeyTime = time.ElapsedMilliseconds;
+                    velocity_y -= kick;
+                    Console.WriteLine("KICK");
                 }
 
                 //Console.WriteLine(velocity_x);
@@ -156,17 +161,3 @@ namespace SFMLtest2
 
 
 
-
-
-
-
-
-
-#region Circle simple drawn
-
-//CircleShape circle = new CircleShape(50.0f);
-
-//circle.FillColor = new Color(Color.Magenta);
-//circle.Position = new Vector2f(50.0f, 50.0f);
-//app.Draw(circle);
-#endregion
