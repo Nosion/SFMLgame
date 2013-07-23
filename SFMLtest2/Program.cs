@@ -33,6 +33,15 @@ namespace SFMLtest2
             Stopwatch time = new Stopwatch();
             time.Start();
 
+
+            long fpstime = 0;
+            long fpstime2 = 0;
+
+            long fps = 0;
+            long lastfps = 0;
+
+
+
             long currentTime = 0;
             long updateTime;
             long kickKeyTime = 0;
@@ -57,7 +66,7 @@ namespace SFMLtest2
             velocity_y = (speed_y * scale_y);
 
             //Kick equasion
-            float kick = (float)((Math.Cos((0 * (Math.PI / 180)))) / 2);
+            float kick = (float)((Math.Cos((0 * (Math.PI / 180)))) / 3);
 
 
             //float velocity_xF = (float)velocity_x;
@@ -88,8 +97,15 @@ namespace SFMLtest2
             ball.Position = new Vector2f(450f, 300f);
             ball.Scale = new Vector2f(0.3f, 0.3f);
             ball.Texture.Smooth = true;
-            #endregion
 
+            Font arial = new Font(@"C:\Windows\Fonts\arial.ttf");     //What if Font is not present on host pc?
+            Text fpstext = new Text();
+            fpstext.Position = new Vector2f(5f,5f);
+            
+            
+            
+
+            #endregion
 
             // Start the game loop
             while (app.IsOpen())
@@ -100,15 +116,28 @@ namespace SFMLtest2
                 // Clear screen
                 app.Clear(windowColor);
 
+                //Gametime - something is wrong.
                 updateTime = time.ElapsedMilliseconds - currentTime;
                 currentTime = time.ElapsedMilliseconds;
 
 
-                //if (velocity_y)
+                #region FPS
+                fpstime = time.ElapsedMilliseconds - fpstime2;
 
+                if (fpstime >= 1000)
+                {
+                    lastfps = fps;
+                    fps = 0;
+                    fpstime2 += 1000;
+                    fpstext = new Text(lastfps.ToString() + " FPS", arial, 15);
+                }
+                fps++;
+
+                #endregion
+                 
 
                 velocity_y += updateTime * 0.00009f;
-                // velocity_x -= updateTime * 0.00009f;
+                //velocity_x -= updateTime * 0.00009f;
 
 
                 if (velocity_y < 0.38f)
@@ -130,8 +159,6 @@ namespace SFMLtest2
                 }
 
 
-
-
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Space) && time.ElapsedMilliseconds - kickKeyTime >= 1000)
                 {
                     kickKeyTime = time.ElapsedMilliseconds;
@@ -148,6 +175,7 @@ namespace SFMLtest2
                 app.Draw(lawn);
                 app.Draw(ball);
                 app.Draw(zombie);
+                app.Draw(fpstext);
 
                 app.Display();
 
@@ -156,8 +184,3 @@ namespace SFMLtest2
         } //End Main()
     } //End Program
 }
-
-
-
-
-
