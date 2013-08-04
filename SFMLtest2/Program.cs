@@ -28,23 +28,20 @@ namespace SFMLtest2
             float speed_x = 0.00f;
             float speed_y = 0.00f;
             float gravity = 0.0001f;
+            float BounceEnergyLoss = 0.6f;
+            float spin = 0;
+            float airDrag = 0.000003f;
 
             //Gametime.
             Stopwatch time = new Stopwatch();
             time.Start();
-
-
-            long fpstime = 0;
-            long fpstime2 = 0;
-
-            long fps = 0;
-            long lastfps = 0;
-
-
-
             long currentTime = 0;
             long updateTime;
             long kickKeyTime = 0;
+
+            long fpstime = 0;
+            long fpsSec = 0;
+            long fps = 0;
 
 
             float scale_x;
@@ -66,23 +63,25 @@ namespace SFMLtest2
             velocity_y = (speed_y * scale_y);
 
             //Kick equasion
-            float kick = (float)((Math.Cos((0 * (Math.PI / 180)))) / 3);
+            //float kick = - (float)(90 * Math.PI / 180);
+            float kick = (float)((Math.Cos((0 * (Math.PI / 180))))/ 3);
 
 
             //float velocity_xF = (float)velocity_x;
             //float velocity_yF = (float)velocity_y;
-
+            #region Texture definision / Window
             // Create the main window
-            RenderWindow app = new RenderWindow(new VideoMode(900, 600), "SFML Works!");
+            uint windowX = 900; //define window length x
+            uint windowY = 600; //define window length y
+            RenderWindow app = new RenderWindow(new VideoMode(windowX, windowY), "SFML Works!");
             app.Closed += new EventHandler(OnClose);
             Color windowColor = new Color(0, 192, 255);
-
-            #region Texture definision
+                        
             //Zombie
             Texture TextureZombie = new Texture("textures\\zombie.png");
             Sprite zombie = new Sprite(new Texture("textures\\zombie.png"));
             zombie.Position = new Vector2f(50f, 250f);
-            zombie.Scale = new Vector2f(0.4f, 0.4f);
+            zombie.Scale = new Vector2f(0.3f, 0.3f);
             zombie.Texture.Smooth = true;
 
             //Lawn
@@ -91,13 +90,22 @@ namespace SFMLtest2
             //lawn.Position = new Vector2f(lawn.Texture.Size.X , lawn.Texture.Size.Y);
             lawn.Position = new Vector2f(0f, (600f - lawn.Texture.Size.Y));
 
+
             //Ball
             Texture TextureBall = new Texture("textures\\ball.png");
             Sprite ball = new Sprite(new Texture("textures\\ball.png"));
-            ball.Position = new Vector2f(450f, 300f);
-            ball.Scale = new Vector2f(0.3f, 0.3f);
+            ball.Position = new Vector2f(100f, 300f);
+            ball.Scale = new Vector2f(0.2f, 0.2f);
             ball.Texture.Smooth = true;
+            ball.Origin = new Vector2f(171, 171);
+            float ballSize = TextureBall.Size.X;
+            float ballScale = ball.Scale.X;
+            //Radius of the ball.
+            float ballSizeScaled = ballSize * ballScale / 2; 
+            
 
+
+            //FPS
             Font arial = new Font(@"C:\Windows\Fonts\arial.ttf");     //What if Font is not present on host pc?
             Text fpstext = new Text();
             fpstext.Position = new Vector2f(5f,5f);
@@ -116,65 +124,92 @@ namespace SFMLtest2
                 // Clear screen
                 app.Clear(windowColor);
 
-                //Gametime - something is wrong.
+                //Trying to control gametime. NOT WORKING
                 updateTime = time.ElapsedMilliseconds - currentTime;
                 currentTime = time.ElapsedMilliseconds;
-
+                velocity_y += updateTime * 0.00009f;
 
                 #region FPS
-                fpstime = time.ElapsedMilliseconds - fpstime2;
+                fpstime = time.ElapsedMilliseconds - fpsSec;
 
                 if (fpstime >= 1000)
-                {
-                    lastfps = fps;
+                {                    
+                    fpsSec += 1000;
+                    fpstext = new Text(fps.ToString() + " FPS", arial, 15);
                     fps = 0;
-                    fpstime2 += 1000;
-                    fpstext = new Text(lastfps.ToString() + " FPS", arial, 15);
                 }
                 fps++;
 
                 #endregion
-                 
-
-                velocity_y += updateTime * 0.00009f;
-                //velocity_x -= updateTime * 0.00009f;
-
-
+                               
+                //Adding gravity.
                 if (velocity_y < 0.38f)
                 {
                     velocity_y += gvelocity;
                 }
 
 
+                ball.Position += new Vector2f(velocity_x, velocity_y);
 
-                if (ball.Position.X <= 800f)
+
+                //Ball moving
+                if (ball.Position.X >= windowX - ballSizeScaled)  //windowX - ballSize * ball.Scale.X / 2
                 {
+                    velocity_x = +velocity_x * -BounceEnergyLoss;
+                    ball.Position += new Vector2f(velocity_x, velocity_y);
+
+                    //Experimental spin
+                    //spin += -0.2f;
+                    //ball.Rotation = spin;
+                }
+
+                //Left boundary
+                if (ball.Position.X <= ballSizeScaled)
+                {
+                    velocity_x = -velocity_x * BounceEnergyLoss;
                     ball.Position += new Vector2f(velocity_x, velocity_y);
                 }
-                if (ball.Position.Y >= 500f)
+
+                //Lower boundary
+                if (ball.Position.Y >= windowY - ballSizeScaled)
                 {
-                    velocity_y = (velocity_y * -1f) + velocity_y * 0.05f;
-                    velocity_x = 0f;
-                    ball.Position = new Vector2f(ball.Position.X, 500f);
+                    velocity_y = (velocity_y * -BounceEnergyLoss);//+ velocity_y * 0.05f
+
+                    if (velocity_x != 0)
+                    {
+                        velocity_x = velocity_x * 0.0000000002f;
+                    }
+                    
+                    //velocity_x = 0f;
+                    ball.Position = new Vector2f(ball.Position.X, windowY-ballSizeScaled);
+                }
+
+                //Upper boundary
+                if (ball.Position.Y <= ballSizeScaled)
+                {
+                    velocity_y = -velocity_y;
+                    
+                    ball.Position += new Vector2f(velocity_x, velocity_y);
                 }
 
 
+
+                //Kick
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Space) && time.ElapsedMilliseconds - kickKeyTime >= 1000)
                 {
                     kickKeyTime = time.ElapsedMilliseconds;
                     velocity_y -= kick;
+                    velocity_x -= kick;
+
                     Console.WriteLine("KICK");
                 }
-
-                //Console.WriteLine(velocity_x);
-                //Console.WriteLine(velocity_y);
-
 
 
                 //Drawing onto window
                 app.Draw(lawn);
-                app.Draw(ball);
+                
                 app.Draw(zombie);
+                app.Draw(ball);
                 app.Draw(fpstext);
 
                 app.Display();
